@@ -1,14 +1,54 @@
 import  {useState, useEffect } from 'react';
 import { Text, View, StyleSheet } from 'react-native';
 import Slider from '@react-native-community/slider';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 export default function TabLayout() {
   const [sliderValueR, setSliderValueR] = useState(0);
   const [sliderValueG, setSliderValueG] = useState(0);
   const [sliderValueB, setSliderValueB] = useState(0);
 
+  useEffect(() => {
+    getData();
+  }, []);
+  useEffect(() => {
+    storeData();
+  }, [sliderValueR, sliderValueG, sliderValueB]);
+
+  var backgroundColor = `rgb(${sliderValueR}, ${sliderValueG}, ${sliderValueB})`;
+
+  const getData = async () => {
+    try {
+      const red = await AsyncStorage.getItem('valueR');
+      const green = await AsyncStorage.getItem('valueG');
+      const blue = await AsyncStorage.getItem('valueB');
+
+      if (red) {
+        setSliderValueR(Number(red));
+      }
+      if (green) {
+        setSliderValueG(Number(green));
+      }
+      if (blue) {
+        setSliderValueB(Number(blue));
+      }
+    } catch (e) {
+      console.log("Error: " + e + ". Error reading data.");
+    }
+  };
+
+  const storeData = async () => {
+    try {
+      await AsyncStorage.setItem('valueR', sliderValueR.toString());
+      await AsyncStorage.setItem('valueG', sliderValueG.toString());
+      await AsyncStorage.setItem('valueB', sliderValueB.toString());
+    } catch (e) {
+      console.log("Error: " + e + ". Error storing data.");
+    }
+  };
+
   return (
-    <View style={styles.mainContainer}>
+    <View style={[styles.mainContainer, {backgroundColor}]}>
       <View style={styles.content}>
         <Text style={styles.title}>Slide to change {'\n'} the background color</Text>
         <View style={styles.slider}>
@@ -68,7 +108,7 @@ const styles = StyleSheet.create({
     height: '100%',
     width: '100%',
     justifyContent: 'center',
-    alignItems: 'center'
+    alignItems: 'center',
   },
   content: {
     backgroundColor: 'rgba(255, 255, 255, 0.8)',
